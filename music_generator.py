@@ -2,6 +2,7 @@ from music_analyzor import *
 from music21 import *
 from music21 import chord
 import time
+import os
 
 # color refer: https://xdevs.com/guide/color_serial/
 
@@ -102,14 +103,31 @@ class MusicGenerator(MusicAnalyzor):
         print("{0}mixtion{1}: melody and chords start mixing...".format('\033[1m','\033[0m'),end="")
         for note in melody_lst:
             p_melody.append(note)
+        
         # create chords part of the score
         p_chords = stream.Part()
         p_chords.append(mm1)
         for num_chord in range(len(chords_lst)):
             p_chords.insert(num_chord*2, chords_lst[num_chord])
+        
         # mix the melody and chords
         s.insert(0,p_melody)
         s.insert(0,p_chords)
         tm2 = time.time()
         print("{0}s...finished mixing".format(str(round(tm2-tm1,5))))
+        
+        # write outputs
+        tm1 = time.time()
+        print("{0}outputs:{1} start writing...".format('\033[1m','\033[0m'),end="")
+        fp_output = ['file.mid','score-1.png','score.musicxml']
+        for fp in fp_output:
+            if os.path.exists(fp):
+                os.remove(fp)
+            s.write('midi', fp='file.mid')
+        tm2 = time.time()
+        print("{2}s...{0}midi{1} finished writing...".format('\033[1m','\033[0m',str(round(tm2-tm1,5))),end='')
+        s.write('musicxml.png',fp = 'score.png')
+        tm3 = time.time()
+        print("{0}s...{1}png {2} finished writing ".format(str(round(tm3-tm1,5)),'\033[1m','\033[0m'))
+        
         return s
