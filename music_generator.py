@@ -1,6 +1,7 @@
 from music_analyzor import *
 from music21 import *
 from music21 import chord
+import time
 
 # color refer: https://xdevs.com/guide/color_serial/
 
@@ -8,12 +9,16 @@ class MusicGenerator(MusicAnalyzor):
     def __init__(self, note_object,num_bars):
         MusicAnalyzor.__init__(self, note_object, num_bars)
         self.Key = self.key_setting()
-        print("{0}rhythm beats{1} \nstart...".format('\033[1m','\033[0m'))
+        tm1 = time.time()
+        print("{0}rhythm beats{1}: start generating...".format('\033[1m','\033[0m'),end="")
         self.Beats = self.rhythm_setting()
-        print("finished...\n {2}{3}{4}".format('\033[1m','\033[0m','\033[94m',str(self.Beats),'\033[0m'))
-        print("{0}chords progression{1} \nstart...".format('\033[1m','\033[0m'))
+        tm2 = time.time()
+        print("{1}s...finished generating\n {2}{3}{4}".format('',str(round(tm2-tm1,5)),'\033[93m',str(self.Beats),'\033[0m'))
+        tm1 = time.time()
+        print("{0}chords progression:{1} start generating...".format('\033[1m','\033[0m'),end="")
         self.ChordsPrg = self.chords_setting()
-        print("finished...\n {2}{3}{4}".format('\033[1m','\033[0m','\033[92m',str(self.ChordsPrg),'\033[0m'))
+        tm2 = time.time()
+        print("{1}s...finished generating\n {2}{3}{4}".format('',str(round(tm2-tm1,5)),'\033[92m',str(self.ChordsPrg),'\033[0m'))
 
     def chords_generate(self):
         chords_lst=[]
@@ -30,17 +35,20 @@ class MusicGenerator(MusicAnalyzor):
 
     def melody_generate(self):
         '''generate melody_notes list based on key, chord progression and beats.'''
-        print("{0}melody{1} \nstart...".format('\033[1m','\033[0m'))
         cnt_notes_bar = [len(x) for x in self.Beats]
         _melody_notes = []
         for num_beat in range(len(self.Beats)):
-            num_chord = num_beat//4
+            num_chord = num_beat//len(self.ChordsPrg)
             rf = roman.RomanNumeral(self.ChordsPrg[num_chord], self.Key) # transfer roman numerals to chords based on key.
             chordNotes = rf.normalOrder # get the pitches of chords
             _melody_notes.append(random.choices(chordNotes,k=cnt_notes_bar[num_beat])) # randomly generate notes based on chords.
+        melody_lst=self.melody_str2notes(_melody_notes)
+        melody_lst=self.melody_f3notes(melody_lst)
+        return melody_lst
 
+    def melody_str2notes(self,_melody_notes):
         melody_lst = []
-        # set beats
+        # Fill notes to beats
         for num_melody in range(len(_melody_notes)):  
             itm= _melody_notes[num_melody]
             # type of the note beat
@@ -55,7 +63,17 @@ class MusicGenerator(MusicAnalyzor):
                 else:
                     _note = note.Note(self.note_num[str(itm_melody)][0], type = _type) # Pitch note
                 melody_lst.append(_note)
-        print("finished...\n{2} {3}{4} ".format('\033[1m','\033[0m','\033[93m',str(melody_lst),'\033[0m'))
+        return melody_lst
+
+    def melody_f3notes(self,melody_lst):
+        f3idx = []
+        for num_mld_note in range(len(melody_lst)):
+            if melody_lst[num_mld_note].isNote:
+                f3idx.append(num_mld_note) 
+                if len(f3idx)>= len(self.notelist_ipt):
+                    break
+        for _num_idx in range(len(f3idx)):
+            melody_lst[f3idx[_num_idx]] = note.Note(self.notelist_ipt[_num_idx],type = melody_lst[f3idx[_num_idx]].duration.type)
         return melody_lst
 
     def mix_melody_chords(self):
@@ -64,8 +82,24 @@ class MusicGenerator(MusicAnalyzor):
         # create melody part of the score
         p_melody = stream.Part()
         p_melody.append(mm1)
+
+        # generate chords
+        tm1 = time.time()
+        print("{0}chord:{1} start generating...".format('\033[1m','\033[0m'),end="")
         chords_lst = self.chords_generate() # generate chords
-        melody_lst = self.melody_generate() # generate melody
+        tm2 = time.time()
+        print("{1}s...finished generating\n{2} {3}{4} ".format('',str(round(tm2-tm1,5)),'\033[94m',str(chords_lst),'\033[0m'))
+
+        # generate melody
+        tm1 = time.time()
+        print("{0}melody:{1} start generating...".format('\033[1m','\033[0m'),end="")
+        melody_lst = self.melody_generate() 
+        tm2 = time.time()
+        print("{1}s...finished generating\n{2} {3}{4} ".format('',str(round(tm2-tm1,5)),'\033[94m',str(melody_lst),'\033[0m'))
+
+        # mixtion
+        tm1 = time.time()
+        print("{0}mixtion{1}: melody and chords start mixing...".format('\033[1m','\033[0m'),end="")
         for note in melody_lst:
             p_melody.append(note)
         # create chords part of the score
@@ -76,4 +110,6 @@ class MusicGenerator(MusicAnalyzor):
         # mix the melody and chords
         s.insert(0,p_melody)
         s.insert(0,p_chords)
+        tm2 = time.time()
+        print("{0}s...finished mixing".format(str(round(tm2-tm1,5))))
         return s

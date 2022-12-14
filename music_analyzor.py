@@ -25,6 +25,7 @@ class MusicAnalyzor:
         } # all the notes_nums of key_nums
         self.rhythms = ['1','01','11','1111','1','01','11','1111','1','01','11','1111','1','01','11','1111','1','01','11','1111','0','1110','1101','1011','1010','0111','0101']
         self.notelist_ipt = note_object[0]
+        print("{0}Input:{1} {2}{3}{4}".format('\033[1m','\033[0m','\033[0:35m',str(note_object),'\033[0m'))
         self.rhythm_ipt = note_object[1]
         self.meter = '4/4'
         self.chordPgsDgr = [
@@ -38,7 +39,7 @@ class MusicAnalyzor:
             'ii':['','7','9',''],
             'iii':['','7','9','sus2'], 
             'IV':['','7','9','sus2'],
-            'V':['','7','9','sus2'],
+            'V':['','','9','sus2'],
             'vi':['','7','9','sus4'],
             'bVII':['']
             }
