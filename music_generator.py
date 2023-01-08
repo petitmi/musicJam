@@ -1,6 +1,5 @@
-from music_analyzor import *
+from MusicJam.music_analyzor import *
 from music21 import *
-from music21 import chord
 import time
 import os
 
@@ -9,7 +8,8 @@ import os
 class MusicGenerator(MusicAnalyzor):
     def __init__(self, note_object,num_bars,bpm):
         MusicAnalyzor.__init__(self, note_object, num_bars,bpm)
-        self.Key = self.key_setting()
+        # self.Key = self.key_setting()
+        self.Key = "C"
         tm1 = time.time()
         print("{0}rhythm beats{1}: start generating...".format('\033[1m','\033[0m'),end="")
         self.Beats = self.rhythm_setting()
